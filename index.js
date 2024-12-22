@@ -25,6 +25,7 @@ async function run() {
   try {
     await client.connect();
     const sessionBd = client.db("studySphere").collection("session");
+    const reviewsCollection = client.db("studySphere").collection("reviews");
 
     const bookingCollection = client
       .db("studySphere")
@@ -35,6 +36,12 @@ async function run() {
       const result = await sessionBd.insertOne(card);
       res.send(result);
     });
+    app.post("/reviews", async (req, res) => {
+      const card = req.body;
+      const result = await reviewsCollection.insertOne(card);
+      res.send(result);
+    });
+
     app.post("/bookedSession", async (req, res) => {
       const card = req.body;
       const result = await bookingCollection.insertOne(card);
@@ -66,6 +73,14 @@ async function run() {
 
     app.get("/session", async (req, res) => {
       const cursor = sessionBd.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/reviews/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { reviewID: id };
+      const cursor = reviewsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
