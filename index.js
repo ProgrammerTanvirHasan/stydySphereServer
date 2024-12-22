@@ -40,7 +40,7 @@ async function run() {
       const result = await bookingCollection.insertOne(card);
       res.send(result);
     });
-    //todo
+
     app.post("/create-payment-intent", async (req, res) => {
       const { amount } = req.body;
 
@@ -82,7 +82,16 @@ async function run() {
     app.get("/session/:_id", async (req, res) => {
       const { _id } = req.params;
       const query = { _id: new ObjectId(_id) };
+
       const result = await sessionBd.findOne(query);
+      res.send(result);
+    });
+
+    app.get("/bookedSession/title/:title", async (req, res) => {
+      const { title } = req.params;
+
+      const query = { title: title };
+      const result = await bookingCollection.findOne(query);
       res.send(result);
     });
 
