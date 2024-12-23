@@ -101,10 +101,43 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/stored/:email", async (req, res) => {
+    app.get("/stored/email/:email", async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
       const result = await storeCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/stored/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const query = { _id: new ObjectId(_id) };
+      const result = await storeCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.delete("/stored/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const query = { _id: new ObjectId(_id) };
+      const result = await storeCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.patch("/stored/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const card = req.body;
+      const filter = { _id: new ObjectId(_id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          title: card.title,
+          note: card.note,
+        },
+      };
+      const result = await storeCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
 
