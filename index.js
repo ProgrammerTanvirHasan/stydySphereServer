@@ -27,6 +27,7 @@ async function run() {
     const sessionBd = client.db("studySphere").collection("session");
     const reviewsCollection = client.db("studySphere").collection("reviews");
     const storeCollection = client.db("studySphere").collection("stored");
+    const usersCollection = client.db("studySphere").collection("register");
 
     const bookingCollection = client
       .db("studySphere")
@@ -55,6 +56,28 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/register", async (req, res) => {
+      const card = req.body;
+      const result = await usersCollection.insertOne(card);
+      res.send(result);
+    });
+
+    app.patch("/register/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const filter = { _id: new ObjectId(_id) };
+      const { role } = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: { role },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
     app.post("/create-payment-intent", async (req, res) => {
       const { amount } = req.body;
 
@@ -80,6 +103,11 @@ async function run() {
 
     app.get("/session", async (req, res) => {
       const cursor = sessionBd.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/register", async (req, res) => {
+      const cursor = usersCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
