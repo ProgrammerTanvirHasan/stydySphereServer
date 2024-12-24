@@ -84,6 +84,25 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/session/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const query = { _id: new ObjectId(_id) };
+      const result = await sessionBd.deleteOne(query);
+      res.send(result);
+    });
+
+    app.patch("/session/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const filter = { _id: new ObjectId(_id) };
+      const { status } = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: { status },
+      };
+      const result = await sessionBd.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
     app.get("/reviews/:_id", async (req, res) => {
       const { _id } = req.params;
       const query = { reviewID: _id };
