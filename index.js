@@ -106,6 +106,15 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/session/:Approved", async (req, res) => {
+      const { Approved } = req.params;
+      const query = { status: Approved };
+      const cursor = sessionBd.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.get("/register", async (req, res) => {
       const cursor = usersCollection.find();
       const result = await cursor.toArray();
@@ -188,7 +197,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/session/:_id", async (req, res) => {
+    app.get("/session/Approved/:_id", async (req, res) => {
       const { _id } = req.params;
       const query = { _id: new ObjectId(_id) };
 
