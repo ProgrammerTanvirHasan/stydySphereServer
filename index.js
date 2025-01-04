@@ -107,11 +107,16 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/session/:Approved", async (req, res) => {
-      const { Approved } = req.params;
-      const query = { status: Approved };
+    app.get("/session/PendingApproved", async (req, res) => {
+      const query = { status: { $in: ["Pending", "Approved"] } };
       const cursor = sessionBd.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/session/Approved", async (req, res) => {
+      const query = { status: "Approved" };
+      const result = await sessionBd.find(query).toArray();
       res.send(result);
     });
 
@@ -121,22 +126,22 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/session/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const filter = { _id: new ObjectId(_id) };
+      const { status, amount } = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: { status, amount: amount || 0 },
+      };
+      const result = await sessionBd.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
     app.delete("/session/:_id", async (req, res) => {
       const { _id } = req.params;
       const query = { _id: new ObjectId(_id) };
       const result = await sessionBd.deleteOne(query);
-      res.send(result);
-    });
-
-    app.patch("/session/:_id", async (req, res) => {
-      const { _id } = req.params;
-      const filter = { _id: new ObjectId(_id) };
-      const { status } = req.body;
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: { status },
-      };
-      const result = await sessionBd.updateOne(filter, updateDoc, options);
       res.send(result);
     });
 
