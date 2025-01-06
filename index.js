@@ -115,9 +115,18 @@ async function run() {
     });
 
     app.get("/session/Approved", async (req, res) => {
+      console.log(req.query);
+      const page = parseInt(req.query.page) || 0;
+      const limit = parseInt(req.query.limit) || 3;
+      const skip = page * limit;
       const query = { status: "Approved" };
-      const result = await sessionBd.find(query).toArray();
-      res.send(result);
+      const totalCount = await sessionBd.countDocuments(query);
+      const result = await sessionBd
+        .find(query)
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      res.send({ sessions: result, totalCount });
     });
 
     app.get("/register", async (req, res) => {
