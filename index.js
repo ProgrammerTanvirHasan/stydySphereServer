@@ -126,6 +126,16 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/register/:email", async (req, res) => {
+      const { email } = req.params;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      if (!result) {
+        return res.send([]);
+      }
+      res.send(result);
+    });
+
     app.patch("/session/:_id", async (req, res) => {
       const { _id } = req.params;
       const filter = { _id: new ObjectId(_id) };
