@@ -115,7 +115,6 @@ async function run() {
     });
 
     app.get("/session/Approved", async (req, res) => {
-      console.log(req.query);
       const page = parseInt(req.query.page) || 0;
       const limit = parseInt(req.query.limit) || 3;
       const skip = page * limit;
@@ -147,11 +146,17 @@ async function run() {
 
     app.patch("/session/:_id", async (req, res) => {
       const { _id } = req.params;
+    
       const filter = { _id: new ObjectId(_id) };
-      const { status, amount } = req.body;
+      const { status, amount, reason, feedback } = req.body;
       const options = { upsert: true };
       const updateDoc = {
-        $set: { status, amount: amount || 0 },
+        $set: {
+          status: status || null,
+          amount: amount || 0,
+          reason: reason || null,
+          feedback: feedback || null,
+        },
       };
       const result = await sessionBd.updateOne(filter, updateDoc, options);
       res.send(result);
