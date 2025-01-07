@@ -28,6 +28,9 @@ async function run() {
     const reviewsCollection = client.db("studySphere").collection("reviews");
     const storeCollection = client.db("studySphere").collection("stored");
     const usersCollection = client.db("studySphere").collection("register");
+    const announcementCollection = client
+      .db("studySphere")
+      .collection("announcement");
 
     const bookingCollection = client
       .db("studySphere")
@@ -38,6 +41,19 @@ async function run() {
       const result = await sessionBd.insertOne(card);
       res.send(result);
     });
+
+    app.post("/announcement", async (req, res) => {
+      const card = req.body;
+      const result = await announcementCollection.insertOne(card);
+      res.send(result);
+    });
+
+    app.get("/announcement", async (req, res) => {
+      const cursor = announcementCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post("/reviews", async (req, res) => {
       const card = req.body;
       const result = await reviewsCollection.insertOne(card);
@@ -146,7 +162,7 @@ async function run() {
 
     app.patch("/session/:_id", async (req, res) => {
       const { _id } = req.params;
-    
+
       const filter = { _id: new ObjectId(_id) };
       const { status, amount, reason, feedback } = req.body;
       const options = { upsert: true };
