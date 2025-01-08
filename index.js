@@ -187,7 +187,9 @@ async function run() {
 
     app.get("/reviews/:_id", async (req, res) => {
       const { _id } = req.params;
-      const query = { reviewID: _id };
+      const query = {
+        reviewID: _id,
+      };
       const cursor = reviewsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
@@ -255,7 +257,15 @@ async function run() {
 
       const query = { title: title };
       const result = await bookingCollection.findOne(query);
-      res.send(result);
+
+      const emailQuery = { title: title };
+      const emailResults = await bookingCollection.find(emailQuery).toArray();
+      const emails = emailResults.map((session) => session.studentEmail);
+      const responseData = {
+        data: result,
+        emails: emails,
+      };
+      res.send(responseData);
     });
 
     await client.db("admin").command({ ping: 1 });
