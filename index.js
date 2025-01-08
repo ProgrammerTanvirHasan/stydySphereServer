@@ -67,8 +67,18 @@ async function run() {
     });
 
     app.post("/bookedSession", async (req, res) => {
-      const card = req.body;
-      const result = await bookingCollection.insertOne(card);
+      const bookingData = req.body;
+      const { studentEmail, studySessionID } = bookingData;
+      const existingBooking = await bookingCollection.findOne({
+        studentEmail: studentEmail,
+        studySessionID: studySessionID,
+      });
+      if (existingBooking) {
+        return res.status(400).send({
+          message: "You have already booked this session.",
+        });
+      }
+      const result = await bookingCollection.insertOne(bookingData);
       res.send(result);
     });
 
