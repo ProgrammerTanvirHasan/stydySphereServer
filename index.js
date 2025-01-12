@@ -49,6 +49,53 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/material/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        tutorEmail: email,
+      };
+
+      const result = await materialCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/material/update/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const query = { _id: new ObjectId(_id) };
+
+      const result = await materialCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/material/:_id", async (req, res) => {
+      const { _id } = req.params;
+  
+      const filter = { _id: new ObjectId(_id) };
+     
+      const options = { upsert: true };
+      const { title, driveLink, imageUrl } = req.body;
+
+      const updateDoc = {
+        $set: {
+          title: title,
+          driveLink: driveLink,
+          imageUrl: imageUrl,
+        },
+      };
+      const result = await materialCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    app.delete("/material/:_id", async (req, res) => {
+      const { _id } = req.params;
+      const query = { _id: new ObjectId(_id) };
+      const result = await materialCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.post("/announcement", async (req, res) => {
       const card = req.body;
       const result = await announcementCollection.insertOne(card);
