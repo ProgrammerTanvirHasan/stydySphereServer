@@ -49,6 +49,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/material", async (req, res) => {
+      const cursor = materialCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.get("/material/:email", async (req, res) => {
       const email = req.params.email;
       const query = {
@@ -68,9 +74,9 @@ async function run() {
 
     app.patch("/material/:_id", async (req, res) => {
       const { _id } = req.params;
-  
+
       const filter = { _id: new ObjectId(_id) };
-     
+
       const options = { upsert: true };
       const { title, driveLink, imageUrl } = req.body;
 
