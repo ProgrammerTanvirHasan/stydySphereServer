@@ -55,6 +55,21 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/material/material/:studySessionID", async (req, res) => {
+      const { studySessionID } = req.params;
+      const query = { studySessionId: studySessionID };
+      try {
+        const result = await materialCollection.findOne(query);
+        if (result) {
+          res.json(result);
+        } else {
+          res.status(404).json({ error: "Material not found" });
+        }
+      } catch (error) {
+        res.status(500).json({ error: "An error occurred on the server" });
+      }
+    });
+
     app.get("/material/:email", async (req, res) => {
       const email = req.params.email;
       const query = {
