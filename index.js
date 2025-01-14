@@ -102,6 +102,7 @@ async function run() {
           imageUrl: imageUrl,
         },
       };
+
       const result = await materialCollection.updateOne(
         filter,
         updateDoc,
