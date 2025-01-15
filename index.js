@@ -245,6 +245,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/register/register", async (req, res) => {
+      const query = { role: "tutor" };
+      const cursor = usersCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.get("/register/:email", async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
