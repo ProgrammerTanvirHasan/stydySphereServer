@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const stripe = require("stripe")(
   "sk_test_51QUQaHRvXT53lVY8zrZcMryGJWCrHhKWzymYxKmCf5rDfQnHbUBnknXGJin8IrqgFU3s85K8YuksAegSndtiVuOo004qoLzxZG"
 );
@@ -7,10 +9,21 @@ const stripe = require("stripe")(
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 4000;
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  CURSOR_FLAGS,
+} = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wfkgk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -20,6 +33,21 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.jwt_token;
+  if (!token) {
+    return res.status(401).send({ message: "UnAuthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "UnAuthorized access" });
+    }
+    req.user = decoded;
+
+    next();
+  });
+};
 
 async function run() {
   try {
@@ -38,6 +66,58 @@ async function run() {
       .db("studySphere")
       .collection("bookedSession");
 
+      
+
+    const verifyAdmin = async (req, res, next) => {
+      if (!req.user || !req.user.email) {
+        return res.status(401).send({ message: "Unauthorized request" });
+      }
+
+      const user = await usersCollection.findOne({ email: req.user.email });
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).send({ message: "you have no access" });
+      }
+
+      next();
+    };
+
+    // auth related api
+    app.post("/jwt", async (req, res) => {
+      const { email } = req.body;
+      console.log(email, "email from jwt");
+      const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+        expiresIn: "1h",
+      });
+
+      res
+        .cookie("jwt_token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
+
+    app.post("/logOut", async (req, res) => {
+      try {
+        // Clear the JWT token from cookies
+        res.clearCookie("jwt_token", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        });
+        res
+          .status(200)
+          .send({ success: true, message: "Logged out successfully" });
+      } catch (error) {
+        console.error("Error during logout:", error.message);
+        res.status(500).send({ success: false, error: "Logout failed" });
+      }
+    });
+
+    // service related api
+
     app.post("/session", async (req, res) => {
       const card = req.body;
       const result = await sessionBd.insertOne(card);
@@ -49,7 +129,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/material", async (req, res) => {
+    app.get("/material", verifyToken, verifyAdmin, async (req, res) => {
       const cursor = materialCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -70,7 +150,10 @@ async function run() {
       }
     });
 
-    app.get("/material/:email", async (req, res) => {
+    app.get("/material/:email", verifyToken, async (req, res) => {
+      if (req.params.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden excess" });
+      }
       const email = req.params.email;
       const query = {
         tutorEmail: email,
@@ -124,7 +207,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/announcement", async (req, res) => {
+    app.get("/announcement", verifyToken, async (req, res) => {
       const cursor = announcementCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -203,18 +286,33 @@ async function run() {
       }
     });
 
-    app.get("/session", async (req, res) => {
-      const cursor = sessionBd.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
+    app.get(
+      "/session/email/:email",
+      verifyToken,
 
-    app.get("/session/PendingApproved", async (req, res) => {
-      const query = { status: { $in: ["Pending", "Approved"] } };
-      const cursor = sessionBd.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
-    });
+      async (req, res) => {
+        if (req.params.email !== req.user.email) {
+          return res.status(403).send({ message: "forbidden excess" });
+        }
+        const { email } = req.params;
+        const query = { email: email };
+        const cursor = sessionBd.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    );
+
+    app.get(
+      "/session/PendingApproved",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const query = { status: { $in: ["Pending", "Approved"] } };
+        const cursor = sessionBd.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    );
 
     app.get("/session/Approved", async (req, res) => {
       const page = parseInt(req.query.page) || 0;
@@ -230,16 +328,18 @@ async function run() {
       res.send({ sessions: result, totalCount });
     });
 
-    app.get("/session/:email", async (req, res) => {
+    app.get("/session/:email", verifyToken, async (req, res) => {
+      if (req.params.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden excess" });
+      }
       const { email } = req.params;
-
       const query = { email: email, status: "Approved" };
       const cursor = sessionBd.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    app.get("/register", async (req, res) => {
+    app.get("/register", verifyToken, verifyAdmin, async (req, res) => {
       const cursor = usersCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -297,16 +397,25 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/bookedSession/:email", async (req, res) => {
-      const { email } = req.params;
-      const query = {
-        studentEmail: email,
-      };
-      const result = await bookingCollection.find(query).toArray();
-      res.send(result);
-    });
+    app.get(
+      "/bookedSession/:email",
+      verifyToken,
 
-    app.get("/stored/email/:email", async (req, res) => {
+      async (req, res) => {
+        if (req.params.email !== req.user.email) {
+          return res.status(403).send({ message: "forbidden excess" });
+        }
+
+        const { email } = req.params;
+        const query = {
+          studentEmail: email,
+        };
+        const result = await bookingCollection.find(query).toArray();
+        res.send(result);
+      }
+    );
+
+    app.get("/stored/email/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
       const query = { email: email };
       const result = await storeCollection.find(query).toArray();
