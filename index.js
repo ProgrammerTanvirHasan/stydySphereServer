@@ -11,11 +11,7 @@ require("dotenv").config();
 const port = process.env.PORT || 4000;
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "studysphere-cf030.web.app",
-      "studysphere-cf030.firebaseapp.com",
-    ],
+    origin: ["http://localhost:5173"],
     credentials: true,
   })
 );
@@ -56,7 +52,7 @@ const verifyToken = async (req, res, next) => {
 
 async function run() {
   try {
-    // await client.connect();
+    await client.connect();
     const sessionBd = client.db("studySphere").collection("session");
     const reviewsCollection = client.db("studySphere").collection("reviews");
     const storeCollection = client.db("studySphere").collection("stored");
@@ -482,10 +478,10 @@ async function run() {
       res.send(responseData);
     });
 
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployments. You successfully connected to MongoDB!"
-    // );
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployments. You successfully connected to MongoDB!"
+    );
   } finally {
     // await client.close();
   }
