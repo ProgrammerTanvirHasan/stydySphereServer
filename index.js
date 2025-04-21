@@ -11,10 +11,15 @@ require("dotenv").config();
 const port = process.env.PORT || 4000;
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "studysphere-cf030.web.app",
+      "studysphere-cf030.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -51,7 +56,7 @@ const verifyToken = async (req, res, next) => {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const sessionBd = client.db("studySphere").collection("session");
     const reviewsCollection = client.db("studySphere").collection("reviews");
     const storeCollection = client.db("studySphere").collection("stored");
@@ -65,8 +70,6 @@ async function run() {
     const bookingCollection = client
       .db("studySphere")
       .collection("bookedSession");
-
-      
 
     const verifyAdmin = async (req, res, next) => {
       if (!req.user || !req.user.email) {
@@ -85,7 +88,7 @@ async function run() {
     // auth related api
     app.post("/jwt", async (req, res) => {
       const { email } = req.body;
-      console.log(email, "email from jwt");
+
       const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
         expiresIn: "1h",
       });
@@ -479,10 +482,10 @@ async function run() {
       res.send(responseData);
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployments. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployments. You successfully connected to MongoDB!"
+    // );
   } finally {
     // await client.close();
   }
