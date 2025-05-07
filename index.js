@@ -8,7 +8,7 @@ const stripe = require("stripe")(
 
 const cors = require("cors");
 require("dotenv").config();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 27017;
 app.use(
   cors({
     origin: [
