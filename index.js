@@ -13,8 +13,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://studysphere-cf030.web.app",
-      "https://studysphere-cf030.firebaseapp.com",
+      // "https://studysphere-cf030.web.app",
+      // "https://studysphere-cf030.firebaseapp.com",
     ],
     credentials: true,
   })
