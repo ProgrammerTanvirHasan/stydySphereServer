@@ -63,10 +63,6 @@ async function run() {
     const usersCollection = client.db("studySphere").collection("register");
     const materialCollection = client.db("studySphere").collection("material");
 
-    const announcementCollection = client
-      .db("studySphere")
-      .collection("announcement");
-
     const bookingCollection = client
       .db("studySphere")
       .collection("bookedSession");
@@ -201,18 +197,6 @@ async function run() {
       const { _id } = req.params;
       const query = { _id: new ObjectId(_id) };
       const result = await materialCollection.deleteOne(query);
-      res.send(result);
-    });
-
-    app.post("/announcement", async (req, res) => {
-      const card = req.body;
-      const result = await announcementCollection.insertOne(card);
-      res.send(result);
-    });
-
-    app.get("/announcement", verifyToken, async (req, res) => {
-      const cursor = announcementCollection.find();
-      const result = await cursor.toArray();
       res.send(result);
     });
 
