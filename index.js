@@ -304,6 +304,11 @@ async function run() {
         res.send(result);
       }
     );
+    app.get("/session", async (req, res) => {
+      const cursor = sessionBd.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     app.get(
       "/session/PendingApproved",
