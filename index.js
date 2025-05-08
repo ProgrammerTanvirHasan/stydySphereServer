@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+
 const stripe = require("stripe")(
   "sk_test_51QUQaHRvXT53lVY8zrZcMryGJWCrHhKWzymYxKmCf5rDfQnHbUBnknXGJin8IrqgFU3s85K8YuksAegSndtiVuOo004qoLzxZG"
 );
@@ -9,28 +10,13 @@ const stripe = require("stripe")(
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 27017;
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:5173",
-//       "https://studysphere-cf030.web.app",
-//       "https://studysphere-cf030.firebaseapp.com",
-//     ],
-//     credentials: true,
-//   })
-// );
-
-const allowedOrigins = ["https://studysphere-cf030.web.app"];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [
+      "http://localhost:5173",
+      "https://schoolmenagement.web.app",
+      "https://schoolmenagement.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
