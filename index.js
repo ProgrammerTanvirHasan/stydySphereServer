@@ -14,9 +14,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://schoolmenagement.web.app",
-      "https://schoolmenagement.firebaseapp.com",
       "https://studysphere-cf030.web.app",
+      "https://studysphere-cf030.firebaseapp.com",
     ],
     credentials: true,
   })
