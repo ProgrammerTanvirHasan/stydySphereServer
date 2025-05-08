@@ -16,6 +16,7 @@ app.use(
       "http://localhost:5173",
       "https://schoolmenagement.web.app",
       "https://schoolmenagement.firebaseapp.com",
+      "https://studysphere-cf030.web.app",
     ],
     credentials: true,
   })
