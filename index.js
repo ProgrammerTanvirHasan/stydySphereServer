@@ -30,7 +30,7 @@ const {
   ObjectId,
   CURSOR_FLAGS,
 } = require("mongodb");
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wfkgk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster2.oe4mukv.mongodb.net/?appName=Cluster2`;
 
 const client = new MongoClient(uri, {
   serverApi: {
