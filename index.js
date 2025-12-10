@@ -9,7 +9,7 @@ const stripe = require("stripe")(
 
 const cors = require("cors");
 require("dotenv").config();
-const port = process.env.PORT || 27017;
+const port = process.env.PORT || 4001;
 app.use(
   cors({
     origin: [
@@ -24,13 +24,8 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-const {
-  MongoClient,
-  ServerApiVersion,
-  ObjectId,
-  CURSOR_FLAGS,
-} = require("mongodb");
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster2.oe4mukv.mongodb.net/?appName=Cluster2`;
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster2.oe4mukv.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
